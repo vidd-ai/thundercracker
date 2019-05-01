@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1000">
+<meta name="twitter:card" content="vidd.ai summary">
+<meta name="twitter:site" content="@viddai">
+<meta property="og:url" content="https://viddai.bitbucket.io">
+<meta property="og:title" content="Demo">
+<meta property="og:description" content="Vidd.ai category map">
+<meta property="og:image" content="https://viddai.bitbucket.io">
+<title>Vidd.ai category map</title>
+<link rel="icon" href="/favicon.png">
+
+<style>
+
+.node circle {
+  cursor: pointer;
+  stroke: #3182bd;
+  stroke-width: 1.5px;
+}
+
+.node text {
+  font: 10px sans-serif;
+  pointer-events: none;
+  text-anchor: middle;
+}
+
+line.link {
+  fill: none;
+  stroke: #9ecae1;
+  stroke-width: 1.5px;
+}
+
+body {
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  margin: auto;
+  position: relative;
+  width: 960px;
+}
+
+text, label {
+  font: 12px sans-serif;
+}
+
+form {
+  position: absolute;
+  right: 10px;
+  top: 10px;
+}
+</style>
+
+<body>
+<form>
+  <label><input type="radio" name="dataset" value="apples" checked> Files</label>
+  <label><input type="radio" name="dataset" value="oranges" checked> Categories</label>
+</form>
+
+<script src="//d3js.org/d3.v3.min.js"></script>
+<script src="js/jquery.min.js"></script>
+<script>
+
+var width = 900,
+    height = 570,
+    root;
+
+var force = d3.layout.force()
+    .linkDistance(80)
+    .charge(-120)
+    .gravity(.05)
+    .size([width, height])
+    .on("tick", tick);
+
+
+var svg = d3.select("body").append("svg")
+    .attr("width", width)
+    .attr("height", height);
+
+var link = svg.selectAll(".link"),
+    node = svg.selectAll(".node");
+
+
+function getUrlVars() {
+    var vars = {};
+    var parts = window.location.href.replace(/[?&]+([^=&]+)=([^&]*)/gi, function(m,key,value) {
+        vars[key] = value;
+    });
+    return vars;
+}
+
+var user = getUrlVars()['u'];
+var fn = 'output/' + user + '/' + user + '.cat.json';
+
+d3.json(fn, function(error, json) {
+  if (error) throw error;
+
+  root = json;
+  update();
+});
+
+function update() {
+  var nodes = flatten(root),
+      links = d3.layout.tree().links(nodes);
+
+  // Restart the force layout.
+  force
+      .nodes(nodes)
+      .links(links)
+      .start();
+
+  // Update links.
+  link = link.data(links, function(d) { return d.target.id; });
+
+  link.exit().remove();
+
+  link.enter().insert("line", ".node")
+      .attr("class", "link");
+
+  // Update nodes.
+  node = node.data(nodes, function(d) { return d.id; });
+
+  node.exit().remove();
+
+  var nodeEnter = node.enter().append("g")
+      .attr("class", "node")
+      .on("click", click)
+      .call(force.drag);
+
+  nodeEnter.append("circle")
+      .attr("r", function(d) { return Math.sqrt(d.size) / 10 || 4.5; });
+
+  nodeEnter.append("text")
+      .attr("dy", ".35em")
+      .text(function(d) { return d.name; });
+
+  node.select("circle")
+      .style("fill", color);
+
+}
+
+function tick() {
+  link.attr("x1", function(d) { return d.source.x; })
+      .attr("y1", function(d) { return d.source.y; })
+      .attr("x2", function(d) { return d.target.x; })
+      .attr("y2", function(d) { return d.target.y; });
+
+  node.attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; });
+}
+
+function color(d) {
+  return d._children ? "#3182bd" // collapsed package
+      : d.children ? "#c6dbef" // expanded package
+      : "#fd8d3c"; // leaf node
+}
+
+// Toggle children on click.
+function click(d) {
+  if (d3.event.defaultPrevented) return; // ignore drag
+  if (d.location) {
+  	url = d.location+ "?fn=" + d.name + "&u=" + user  + "&c=Cat";
+  	window.open(encodeURI(url));
+  }
+  if (d.children) {
+    d._children = d.children;
+    d.children = null;
+  } else {
+    d.children = d._children;
+    d._children = null;
+  }
+  update();
+}
+
+// Returns a list of all nodes under the root.
+function flatten(root) {
+  var nodes = [], i = 0;
+
+  function recurse(node) {
+    if (node.children) node.children.forEach(recurse);
+    if (!node.id) node.id = ++i;
+    nodes.push(node);
+  }
+
+  recurse(root);
+  return nodes;
+}
+
+// show category view
+  d3.selectAll("input")
+      .on("change", change);
+  function change() {
+    window.location.href = "segSummary.html?u=" + user;
+  }
+
+
+
+</script>
+<svg width="960" height="170"><g transform="translate(0,100)"></g></svg>
+<script src="https://d3js.org/d3.v4.min.js"></script>
+<script src="https://d3js.org/colorbrewer.v1.min.js"></script>
+
+<script>
+
+var formatPercent = d3.format(".0%"),
+    formatNumber = d3.format(".0f");
+
+var threshold = d3.scaleThreshold()
+    //.domain([0.11, 0.22, 0.33, 0.50])
+    //.range(["#6e7c5a", "#a0b28f", "#d8b8b3", "#b45554", "#760000"]);
+    .domain([0.18, 0.06, 0.60])
+    .range(colorbrewer.Oranges[3]);
+
+var x = d3.scaleLinear()
+    .domain([0, 1])
+    .range([0, 240]);
+
+var xAxis = d3.axisBottom(x)
+    .tickSize(13)
+    .tickValues(threshold.domain())
+    //.tickFormat(function(d) { return d === 0.5 ? formatPercent(d) : formatNumber(100 * d); });
+    .tickFormat(function(d) { return d === 0.5 ? formatPercent(d) : formatNumber(100 * d); });
+
+var g = d3.select("g").call(xAxis);
+
+g.select(".domain")
+    .remove();
+
+g.selectAll("rect")
+  .data(threshold.range().map(function(color) {
+    var d = threshold.invertExtent(color);
+    if (d[0] == null) d[0] = x.domain()[0];
+    if (d[1] == null) d[1] = x.domain()[1];
+    return d;
+  }))
+  .enter().insert("rect", ".tick")
+    .attr("height", 8)
+    .attr("x", function(d) { return x(d[0]); })
+    .attr("width", function(d) { return x(d[1]) - x(d[0]); })
+    .attr("fill", function(d) { return threshold(d[0]); });
+
+g.append("text")
+    .attr("fill", "#000")
+    .attr("font-weight", "bold")
+    .attr("text-anchor", "start")
+    .attr("y", -6)
+    .text("An example VIDD category map, number of segments in this map:");
+
+</script>
+
+</body>
+</html>
