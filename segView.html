@@ -359,14 +359,16 @@ function update(filter, in_graph) {
                 ids[i] = nodes[i].atom;
                 console.log(i.toString() + ',' + nodes[i].atom.toString());
             }
-alert('saving EDL');
+var myurl = 'http://stream.vidd.ai/receiveSelected.php?user=' + user + '&data=' + JSON.stringify(ids);
+var SendInfo= { "user": user, "selected": ids};
+console.log('saving:' + SendInfo);
 
               $.ajax({
                   type: "POST",
-                  url: '/Job/UpdateSelectedSegments?appUserId=93c09755-62ca-4c35-85ba-4dd222ca4ad3&jobId=cdfff2e5-0c7d-4fbb-889c-4e5726f75243&ids='+JSON.stringify(ids),
+                  url: myurl,
                   contentType: "application/json",
                   dataType:"json",
-                data: JSON.stringify(ids),
+                data: JSON.stringify(SendInfo),
                   success: function (response) {
                       alert(response.responseText);
                 }
@@ -393,6 +395,7 @@ alert('saving EDL');
     <button id="NoFace">No Face</button>
     <button id="HasFace">Has Face</button>
 -->
+<a href="data:text/plain;charset=UTF-8,Hello%20World!" download="filename.txt">Download</a>
     <button id="vary">Suggested clips</button>
     <button id="long">Longest clips</button>
     <button id="short">Shortest clips</button>
