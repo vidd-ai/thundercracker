@@ -383,6 +383,7 @@ function update(filter, in_graph) {
 	    a.href = "data:text/plain;charset=UTF-8," + select_str;
 	    a.download = fn + '.edl';
 	    a.click(); // fire click event
+	    select_str = ''; // reset 
 
 	    // save selected on server
 	    var surl = 'http://streamr.vidd.ai/receiveSelected.php?u=' + user + '&fn=' + fn;
