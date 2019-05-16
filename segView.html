@@ -381,7 +381,8 @@ function update(filter, in_graph) {
 
 	    var a = document.getElementById('download_a');
 	    a.href = "data:text/plain;charset=UTF-8," + select_str;
-	    $('#download_a').show();
+	    a.download = fn + '.edl';
+	    a.click(); // fire click event
 
 	    // save selected on server
 	    var surl = 'http://streamr.vidd.ai/receiveSelected.php?u=' + user + '&fn=' + fn;
@@ -430,7 +431,7 @@ function update(filter, in_graph) {
     &nbsp;&nbsp;&nbsp;
     <button id="Selected">Show selected</button>
     <button id="Send">Save Selected</button>
-    <a id="download_a" href="" download="filename.edl" style="display:none">Download</a>
+    <a class="btn btn-info" id="download_a" href="" download="filename.edl" style="display:none">Download</a>
     &nbsp;&nbsp;&nbsp;
     |
     &nbsp;&nbsp;&nbsp;
