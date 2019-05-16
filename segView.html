@@ -81,6 +81,7 @@ function getUrlVars() {
 var demo = 'no';
 var fn = getUrlVars()['fn'];
 var user = getUrlVars()['u'];
+var select_str = '';
 demo = getUrlVars()['d'];
 
 if (demo == 'demo') {
@@ -352,29 +353,53 @@ function update(filter, in_graph) {
             var x = d3.selectAll(".selected");
             x.style("opacity", 1);
             var ids = new Array(x.length);
+            var ids2 = {};
             var nodes = x.data();
+
+	    var json_fn = 'output/' + user + '/' + fn + '/d3.json';
+            var all_nodes = [];
+	    var sec_start = 0;	// starting second
+            $.getJSON(json_fn, function (data) {
+                        var input_files = data["all"]["nodes"];
+                        if (input_files.length == 0) {
+                                console.log("Cannot find any nodes");
+                                return;
+                        }
+                        $.each(data["all"]["nodes"], function (key, val) {
+				//console.log('key:',key,' val:',val["clip_len"]);
+				all_nodes[key] = { "atom": key, "sec_start" : sec_start, "sec_len":  val["clip_len"] };
+                        });
             for (var i = 0; i < nodes.length; i++) {
                 //var da = x.datum(function (d) { return d.atom; });
 
                 ids[i] = nodes[i].atom;
-                console.log(i.toString() + ',' + nodes[i].atom.toString());
+		//console.log('i:',i,' atom:',nodes[i].atom);
+		ids2[i] = { "atom": nodes[i].atom, "sec_start": sec_start, "sec_length": all_nodes[nodes[i].atom].sec_len };
+		select_str += '\n' + fn + ',' + all_nodes[nodes[i].atom].sec_start.toString() + ',' + all_nodes[nodes[i].atom].sec_len.toString() + ';';
+                //console.log(i.toString() + ',' + nodes[i].atom.toString());
             }
-var myurl = 'http://stream.vidd.ai/receiveSelected.php?user=' + user + '&data=' + JSON.stringify(ids);
-var SendInfo= { "user": user, "selected": ids};
-console.log('saving:' + SendInfo);
 
-              $.ajax({
-                  type: "POST",
-                  url: myurl,
-                  contentType: "application/json",
-                  dataType:"json",
-                data: JSON.stringify(SendInfo),
-                  success: function (response) {
-                      alert(response.responseText);
-                }
+	    var a = document.getElementById('download_a');
+	    a.href = "data:text/plain;charset=UTF-8," + select_str;
+	    $('#download_a').show();
+
+	    // save selected on server
+	    var surl = 'http://streamr.vidd.ai/receiveSelected.php?u=' + user + '&fn=' + fn;
+	    console.log('select_str', select_str);
+	    console.log('ids2', ids2);
+
+            $.ajax({
+                 type: "POST",
+                 url: surl,
+                 contentType: "application/json",
+                 dataType:"json",
+                 data: JSON.stringify(ids2),
+                 success: function (response) {
+                    alert(response.responseText);
+                  }
+              });
             });
-
-
+	    return;
         });
     });
 
@@ -394,8 +419,8 @@ console.log('saving:' + SendInfo);
 <!--
     <button id="NoFace">No Face</button>
     <button id="HasFace">Has Face</button>
+<a href="data:text/plain;charset=UTF-8,Hello%20World!" download="filename.edl">Download</a>
 -->
-<a href="data:text/plain;charset=UTF-8,Hello%20World!" download="filename.txt">Download</a>
     <button id="vary">Suggested clips</button>
     <button id="long">Longest clips</button>
     <button id="short">Shortest clips</button>
@@ -405,6 +430,7 @@ console.log('saving:' + SendInfo);
     &nbsp;&nbsp;&nbsp;
     <button id="Selected">Show selected</button>
     <button id="Send">Save Selected</button>
+    <a id="download_a" href="" download="filename.edl" style="display:none">Download</a>
     &nbsp;&nbsp;&nbsp;
     |
     &nbsp;&nbsp;&nbsp;
