@@ -155,7 +155,9 @@ function color(d) {
 function click(d) {
   if (d3.event.defaultPrevented) return; // ignore drag
   if (d.location) {
-  	url = d.location+ "?fn=" + d.name + "&u=" + user + "&c=File";
+  	//url = d.location+ "?fn=" + d.name + "&u=" + user + "&c=File";
+  	//window.open(encodeURI(url));
+  	url = "viewer.html?v=" + d.location+ "&fn=" + d.name + "&u=" + user + "&c=File";
   	window.open(encodeURI(url));
   }
   if (d.children) {

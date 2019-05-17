@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<header>
+<script src="js/jquery.min.js"></script>
+</header>
+
+<body>
+  <div>
+    <iframe id="iframe_a" sandbox="allow-popups allow-scripts allow-forms allow-same-origin" src="" frameBorder="0" marginwidth="0" marginheight="0" style="width:100%; height:500px;" scrolling="yes"></iframe>
+  </div>
+</body>
+
+<script>
+
+function getUrlVars() {
+    var vars = {};
+    var parts = window.location.href.replace(/[?&]+([^=&]+)=([^&]*)/gi, function(m,key,value) {
+        vars[key] = value;
+    });
+    return vars;
+}
+
+var fn = getUrlVars()['fn'];
+var user = getUrlVars()['u'];
+var demo = getUrlVars()['d'];
+var v = getUrlVars()['v'];
+var c = getUrlVars()['c'];
+</script>
+<script>
+  var a = document.getElementById('iframe_a');
+  var full_url = v + "?u=" + user;
+  if (fn) {
+    full_url += "&fn=" + fn;
+  }
+  if (c) {
+    full_url += "&c=" + c;
+  }
+  if (demo) {
+    full_url += "&d=" + demo;
+  }
+  a.src = full_url;
+</script>
+
+</html>
