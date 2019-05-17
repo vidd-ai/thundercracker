@@ -273,12 +273,6 @@ function update(filter, in_graph) {
             window.location.href = "https://viddai.bitbucket.io";
             });
 
-/*
-        $('#summaryPage').on('click', function () {
-            window.location.href = "cat.segSummary.html?u=" + user;
-            });
-*/
-
         d3.select('#Selected').on('click', function () {
             var x = d3.selectAll("image[image-selected='1']");
             x.style("opacity", 1);
@@ -360,23 +354,20 @@ function update(filter, in_graph) {
             var all_nodes = [];
 	    var sec_start = 0;	// starting second
             $.getJSON(json_fn, function (data) {
-                        var input_files = data["all"]["nodes"];
-                        if (input_files.length == 0) {
-                                console.log("Cannot find any nodes");
-                                return;
-                        }
-                        $.each(data["all"]["nodes"], function (key, val) {
-				//console.log('key:',key,' val:',val["clip_len"]);
-				all_nodes[key] = { "atom": key, "sec_start" : sec_start, "sec_len":  val["clip_len"] };
-                        });
+                var input_files = data["all"]["nodes"];
+                if (input_files.length == 0) {
+                  console.log("Cannot find any nodes");
+                  return;
+                }
+                $.each(data["all"]["nodes"], function (key, val) {
+		  all_nodes[key] = { "atom": key, "sec_start" : sec_start, "sec_len":  val["clip_len"] };
+                });
             for (var i = 0; i < nodes.length; i++) {
                 //var da = x.datum(function (d) { return d.atom; });
 
                 ids[i] = nodes[i].atom;
-		//console.log('i:',i,' atom:',nodes[i].atom);
 		ids2[i] = { "atom": nodes[i].atom, "sec_start": sec_start, "sec_length": all_nodes[nodes[i].atom].sec_len };
 		select_str += '\n' + fn + ',' + all_nodes[nodes[i].atom].sec_start.toString() + ',' + all_nodes[nodes[i].atom].sec_len.toString() + ';';
-                //console.log(i.toString() + ',' + nodes[i].atom.toString());
             }
 
 	    var a = document.getElementById('download_a');
@@ -421,7 +412,6 @@ function update(filter, in_graph) {
 <!--
     <button id="NoFace">No Face</button>
     <button id="HasFace">Has Face</button>
-<a href="data:text/plain;charset=UTF-8,Hello%20World!" download="filename.edl">Download</a>
 -->
     <button id="vary">Suggested clips</button>
     <button id="long">Longest clips</button>
@@ -439,21 +429,11 @@ function update(filter, in_graph) {
     <button id="categoryMap">Category map</button>
     <button id="fileMap">File map</button>
     <button id="VIDD">Vidd.ai</button>
-<!--
-    <button id="summaryPage">VIDD category map</button>
-    |
-    (COMING SOON
-    <button id="Blurry">In Focus</button>
-    <button id="Non-Blurry">Out of Focus</button> &nbsp;&nbsp;&nbsp; <button id="Non-Blurry">Good Exposure</button> <button id="Blurry">Under/Overexposed</button>
-    )
--->
     <br /><br />
 </div>
 
+</div>
 
-    </div>
-
-    
 </body>
 </html>
 
